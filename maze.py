@@ -1,5 +1,6 @@
 # maze.py
 from cell import Cell
+from queue import PriorityQueue
 import random
 import time
 
@@ -118,69 +119,63 @@ class Maze:
             for cell in col:
                 cell.visited = False
 
-    # returns True if this is the end cell, OR if it leads to the end cell.
-    # returns False if this is a loser cell.
     def _solve_r(self, i, j):
         self._animate()
 
-        # vist the current cell
-        self._cells[i][j].visited = True
+        pq = PriorityQueue()
+        pq.put((0, (i, j)))
+        came_from = {}
+        cost_so_far = {}
+        came_from[(i, j)] = None
+        cost_so_far[(i, j)] = 0
 
-        # if we are at the end cell, we are done!
-        if i == self._num_cols - 1 and j == self._num_rows - 1:
-            return True
+        while not pq.empty():
+            _, current = pq.get()
+            i, j = current
 
-        # move left if there is no wall and it hasn't been visited
-        if (
-            i > 0
-            and not self._cells[i][j].has_left_wall
-            and not self._cells[i - 1][j].visited
-        ):
-            self._cells[i][j].draw_move(self._cells[i - 1][j])
-            if self._solve_r(i - 1, j):
-                return True
-            else:
-                self._cells[i][j].draw_move(self._cells[i - 1][j], True)
+            if i == self._num_cols - 1 and j == self._num_rows - 1:
+                break
 
-        # move right if there is no wall and it hasn't been visited
-        if (
-            i < self._num_cols - 1
-            and not self._cells[i][j].has_right_wall
-            and not self._cells[i + 1][j].visited
-        ):
-            self._cells[i][j].draw_move(self._cells[i + 1][j])
-            if self._solve_r(i + 1, j):
-                return True
-            else:
-                self._cells[i][j].draw_move(self._cells[i + 1][j], True)
+            for next_cell in self._get_neighbors(i, j):
+                new_cost = cost_so_far[(i, j)] + 1
+                if next_cell not in cost_so_far or new_cost < cost_so_far[next_cell]:
+                    cost_so_far[next_cell] = new_cost
+                    priority = new_cost + self._heuristic(next_cell[0], next_cell[1])
+                    pq.put((priority, next_cell))
+                    came_from[next_cell] = (i, j)
 
-        # move up if there is no wall and it hasn't been visited
-        if (
-            j > 0
-            and not self._cells[i][j].has_top_wall
-            and not self._cells[i][j - 1].visited
-        ):
-            self._cells[i][j].draw_move(self._cells[i][j - 1])
-            if self._solve_r(i, j - 1):
-                return True
-            else:
-                self._cells[i][j].draw_move(self._cells[i][j - 1], True)
+        if (self._num_cols - 1, self._num_rows - 1) not in came_from:
+            return False
 
-        # move down if there is no wall and it hasn't been visited
-        if (
-            j < self._num_rows - 1
-            and not self._cells[i][j].has_bottom_wall
-            and not self._cells[i][j + 1].visited
-        ):
-            self._cells[i][j].draw_move(self._cells[i][j + 1])
-            if self._solve_r(i, j + 1):
-                return True
-            else:
-                self._cells[i][j].draw_move(self._cells[i][j + 1], True)
+        self._draw_path(came_from)
+        return True
 
-        # we went the wrong way let the previous cell know by returning False
-        return False
+    def _get_neighbors(self, i, j):
+        neighbors = []
 
-    # create the moves for the solution using a depth first search
+        if i > 0 and not self._cells[i][j].has_left_wall:
+            neighbors.append((i - 1, j))
+        if i < self._num_cols - 1 and not self._cells[i][j].has_right_wall:
+            neighbors.append((i + 1, j))
+        if j > 0 and not self._cells[i][j].has_top_wall:
+            neighbors.append((i, j - 1))
+        if j < self._num_rows - 1 and not self._cells[i][j].has_bottom_wall:
+            neighbors.append((i, j + 1))
+
+        return neighbors
+
+    def _heuristic(self, i, j):
+        return abs(i - (self._num_cols - 1)) + abs(j - (self._num_rows - 1))
+
+    def _draw_path(self, came_from):
+        current = (self._num_cols - 1, self._num_rows - 1)
+        while current != (0, 0):
+            i, j = current
+            self._cells[i][j].visited = True
+            next_cell = came_from[current]
+            if next_cell is not None:
+                self._cells[i][j].draw_move(self._cells[next_cell[0]][next_cell[1]])
+            current = next_cell
+
     def solve(self):
         return self._solve_r(0, 0)
