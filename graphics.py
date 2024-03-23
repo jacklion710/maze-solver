@@ -23,6 +23,9 @@ class Window:
     def draw_line(self, line, fill_color="black"):
         line.draw(self.__canvas, fill_color)
 
+    def draw_text(self, text, x, y, color):
+        self.__canvas.create_text(x, y, anchor="nw", text=text, fill=color)
+
     def close(self):
         self.__running = False
 

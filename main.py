@@ -20,7 +20,7 @@ def main():
     print("Maze created")
 
     results = maze.solve()
-    for name, is_solvable, elapsed_time in results:
+    for name, is_solvable, elapsed_time, _ in results:
         if is_solvable:
             print(f"{name} solved the maze in {elapsed_time:.4f} seconds")
         else:

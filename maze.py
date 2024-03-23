@@ -119,7 +119,7 @@ class Maze:
             for cell in col:
                 cell.visited = False
 
-    def _solve_dfs(self, i, j, color):
+    def _solve_dfs(self, i, j, color, offset):
         stack = [(i, j)]
         came_from = {}
         came_from[(i, j)] = None
@@ -139,10 +139,10 @@ class Maze:
         if (self._num_cols - 1, self._num_rows - 1) not in came_from:
             return False
 
-        self._draw_path(came_from, color)
+        self._draw_path(came_from, color, offset)
         return True
 
-    def _solve_bfs(self, i, j, color):
+    def _solve_bfs(self, i, j, color, offset):
         queue = Queue()
         queue.put((i, j))
         came_from = {}
@@ -163,10 +163,10 @@ class Maze:
         if (self._num_cols - 1, self._num_rows - 1) not in came_from:
             return False
 
-        self._draw_path(came_from, color)
+        self._draw_path(came_from, color, offset)
         return True
 
-    def _solve_dijkstra(self, i, j, color):
+    def _solve_dijkstra(self, i, j, color, offset):
         pq = PriorityQueue()
         pq.put((0, (i, j)))
         came_from = {}
@@ -191,10 +191,10 @@ class Maze:
         if (self._num_cols - 1, self._num_rows - 1) not in came_from:
             return False
 
-        self._draw_path(came_from, color)
+        self._draw_path(came_from, color, offset)
         return True
-    
-    def _solve_astar(self, i, j, color):
+
+    def _solve_astar(self, i, j, color, offset):
         self._animate()
 
         pq = PriorityQueue()
@@ -222,7 +222,7 @@ class Maze:
         if (self._num_cols - 1, self._num_rows - 1) not in came_from:
             return False
 
-        self._draw_path(came_from, color)
+        self._draw_path(came_from, color, offset)
         return True
 
     def _get_neighbors(self, i, j):
@@ -242,30 +242,45 @@ class Maze:
     def _heuristic(self, i, j):
         return abs(i - (self._num_cols - 1)) + abs(j - (self._num_rows - 1))
 
-    def _draw_path(self, came_from, color):
+    def _draw_path(self, came_from, color, offset):
         current = (self._num_cols - 1, self._num_rows - 1)
         while current != (0, 0):
             i, j = current
             self._cells[i][j].visited = True
             next_cell = came_from[current]
             if next_cell is not None:
-                self._cells[i][j].draw_move(self._cells[next_cell[0]][next_cell[1]], color)
+                self._cells[i][j].draw_move(self._cells[next_cell[0]][next_cell[1]], color, offset)
             current = next_cell
 
     def solve(self):
         algorithms = [
-            ('DFS', self._solve_dfs, 'red'),
-            ('BFS', self._solve_bfs, 'green'),
-            ('Dijkstra', self._solve_dijkstra, 'blue'),
-            ('A*', self._solve_astar, 'orange')
+            ('DFS', self._solve_dfs, 'red', -5),
+            ('BFS', self._solve_bfs, 'green', -2),
+            ('Dijkstra', self._solve_dijkstra, 'blue', 2),
+            ('A*', self._solve_astar, 'orange', 5)
         ]
 
         results = []
-        for name, algorithm, color in algorithms:
+        for name, algorithm, color, offset in algorithms:
             self._reset_cells_visted()
             start_time = time.time()
-            is_solvable = algorithm(0, 0, color)
+            is_solvable = algorithm(0, 0, color, offset)
             end_time = time.time()
-            results.append((name, is_solvable, end_time - start_time))
+            results.append((name, is_solvable, end_time - start_time, color))
 
+        self.display_results(results)
         return results
+
+    def display_results(self, results):
+        if self._win is None:
+            return
+
+        x = 10
+        y = 10
+        for name, is_solvable, elapsed_time, color in results:
+            if is_solvable:
+                text = f"{name} solved the maze in {elapsed_time:.4f} seconds"
+            else:
+                text = f"{name} could not solve the maze"
+            self._win.draw_text(text, x, y, color)
+            y += 20
