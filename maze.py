@@ -1,6 +1,6 @@
 # maze.py
 from cell import Cell
-from queue import PriorityQueue
+from queue import PriorityQueue, Queue
 import random
 import time
 
@@ -119,7 +119,82 @@ class Maze:
             for cell in col:
                 cell.visited = False
 
-    def _solve_r(self, i, j):
+    def _solve_dfs(self, i, j, color):
+        stack = [(i, j)]
+        came_from = {}
+        came_from[(i, j)] = None
+
+        while stack:
+            current = stack.pop()
+            i, j = current
+
+            if i == self._num_cols - 1 and j == self._num_rows - 1:
+                break
+
+            for next_cell in self._get_neighbors(i, j):
+                if next_cell not in came_from:
+                    stack.append(next_cell)
+                    came_from[next_cell] = current
+
+        if (self._num_cols - 1, self._num_rows - 1) not in came_from:
+            return False
+
+        self._draw_path(came_from, color)
+        return True
+
+    def _solve_bfs(self, i, j, color):
+        queue = Queue()
+        queue.put((i, j))
+        came_from = {}
+        came_from[(i, j)] = None
+
+        while not queue.empty():
+            current = queue.get()
+            i, j = current
+
+            if i == self._num_cols - 1 and j == self._num_rows - 1:
+                break
+
+            for next_cell in self._get_neighbors(i, j):
+                if next_cell not in came_from:
+                    queue.put(next_cell)
+                    came_from[next_cell] = current
+
+        if (self._num_cols - 1, self._num_rows - 1) not in came_from:
+            return False
+
+        self._draw_path(came_from, color)
+        return True
+
+    def _solve_dijkstra(self, i, j, color):
+        pq = PriorityQueue()
+        pq.put((0, (i, j)))
+        came_from = {}
+        cost_so_far = {}
+        came_from[(i, j)] = None
+        cost_so_far[(i, j)] = 0
+
+        while not pq.empty():
+            _, current = pq.get()
+            i, j = current
+
+            if i == self._num_cols - 1 and j == self._num_rows - 1:
+                break
+
+            for next_cell in self._get_neighbors(i, j):
+                new_cost = cost_so_far[(i, j)] + 1
+                if next_cell not in cost_so_far or new_cost < cost_so_far[next_cell]:
+                    cost_so_far[next_cell] = new_cost
+                    pq.put((new_cost, next_cell))
+                    came_from[next_cell] = current
+
+        if (self._num_cols - 1, self._num_rows - 1) not in came_from:
+            return False
+
+        self._draw_path(came_from, color)
+        return True
+    
+    def _solve_astar(self, i, j, color):
         self._animate()
 
         pq = PriorityQueue()
@@ -147,7 +222,7 @@ class Maze:
         if (self._num_cols - 1, self._num_rows - 1) not in came_from:
             return False
 
-        self._draw_path(came_from)
+        self._draw_path(came_from, color)
         return True
 
     def _get_neighbors(self, i, j):
@@ -167,15 +242,30 @@ class Maze:
     def _heuristic(self, i, j):
         return abs(i - (self._num_cols - 1)) + abs(j - (self._num_rows - 1))
 
-    def _draw_path(self, came_from):
+    def _draw_path(self, came_from, color):
         current = (self._num_cols - 1, self._num_rows - 1)
         while current != (0, 0):
             i, j = current
             self._cells[i][j].visited = True
             next_cell = came_from[current]
             if next_cell is not None:
-                self._cells[i][j].draw_move(self._cells[next_cell[0]][next_cell[1]])
+                self._cells[i][j].draw_move(self._cells[next_cell[0]][next_cell[1]], color)
             current = next_cell
 
     def solve(self):
-        return self._solve_r(0, 0)
+        algorithms = [
+            ('DFS', self._solve_dfs, 'red'),
+            ('BFS', self._solve_bfs, 'green'),
+            ('Dijkstra', self._solve_dijkstra, 'blue'),
+            ('A*', self._solve_astar, 'orange')
+        ]
+
+        results = []
+        for name, algorithm, color in algorithms:
+            self._reset_cells_visted()
+            start_time = time.time()
+            is_solvable = algorithm(0, 0, color)
+            end_time = time.time()
+            results.append((name, is_solvable, end_time - start_time))
+
+        return results
