@@ -1,7 +1,7 @@
+# maze.py
 from cell import Cell
 import random
 import time
-
 
 class Maze:
     def __init__(

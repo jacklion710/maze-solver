@@ -1,5 +1,5 @@
+# graphics.py
 from tkinter import Tk, BOTH, Canvas
-
 
 class Window:
     def __init__(self, width, height):
@@ -26,12 +26,10 @@ class Window:
     def close(self):
         self.__running = False
 
-
 class Point:
     def __init__(self, x, y):
         self.x = x
         self.y = y
-
 
 class Line:
     def __init__(

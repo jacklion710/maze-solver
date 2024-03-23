@@ -1,5 +1,5 @@
+# cell.py
 from graphics import Line, Point
-
 
 class Cell:
     def __init__(self, win=None):
