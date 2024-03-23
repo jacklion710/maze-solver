@@ -61,28 +61,28 @@ class Cell:
 
         # moving left
         if self._x1 > to_cell._x1:
-            line = Line(Point(self._x1 + offset, y_mid), Point(x_mid + offset, y_mid))
+            line = Line(Point(self._x1 + offset, y_mid + offset), Point(x_mid + offset, y_mid + offset))
             self._win.draw_line(line, color)
-            line = Line(Point(to_x_mid + offset, to_y_mid), Point(to_cell._x2 + offset, to_y_mid))
+            line = Line(Point(to_x_mid + offset, to_y_mid + offset), Point(to_cell._x2 + offset, to_y_mid + offset))
             self._win.draw_line(line, color)
 
         # moving right
         elif self._x1 < to_cell._x1:
-            line = Line(Point(x_mid + offset, y_mid), Point(self._x2 + offset, y_mid))
+            line = Line(Point(x_mid + offset, y_mid + offset), Point(self._x2 + offset, y_mid + offset))
             self._win.draw_line(line, color)
-            line = Line(Point(to_cell._x1 + offset, to_y_mid), Point(to_x_mid + offset, to_y_mid))
+            line = Line(Point(to_cell._x1 + offset, to_y_mid + offset), Point(to_x_mid + offset, to_y_mid + offset))
             self._win.draw_line(line, color)
 
         # moving up
         elif self._y1 > to_cell._y1:
-            line = Line(Point(x_mid + offset, y_mid), Point(x_mid + offset, self._y1))
+            line = Line(Point(x_mid + offset, y_mid + offset), Point(x_mid + offset, self._y1 + offset))
             self._win.draw_line(line, color)
-            line = Line(Point(to_x_mid + offset, to_cell._y2), Point(to_x_mid + offset, to_y_mid))
+            line = Line(Point(to_x_mid + offset, to_cell._y2 + offset), Point(to_x_mid + offset, to_y_mid + offset))
             self._win.draw_line(line, color)
 
         # moving down
         elif self._y1 < to_cell._y1:
-            line = Line(Point(x_mid + offset, y_mid), Point(x_mid + offset, self._y2))
+            line = Line(Point(x_mid + offset, y_mid + offset), Point(x_mid + offset, self._y2 + offset))
             self._win.draw_line(line, color)
-            line = Line(Point(to_x_mid + offset, to_y_mid), Point(to_x_mid + offset, to_cell._y1))
+            line = Line(Point(to_x_mid + offset, to_y_mid + offset), Point(to_x_mid + offset, to_cell._y1 + offset))
             self._win.draw_line(line, color)
